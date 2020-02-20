@@ -127,6 +127,12 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     help='Chunks (default: 2)',
 )
 @click.option(
+    '--saveFile', '-e',
+    type=str,
+    default=None,
+    help='Save File (default: None)',
+)
+@click.option(
     '--dataset_size', '-e',
     type=int,
     default=8,
@@ -152,6 +158,7 @@ def cli(ctx: click.Context,
         dataset_size: int,
         skip_epochs: int,
         devices: List[int],
+        save_file: str
         ) -> None:
     """U-Net Speed Benchmark"""
     if skip_epochs >= epochs:
@@ -162,8 +169,7 @@ def cli(ctx: click.Context,
 
     hr()
     click.echo(message="Experiment: {}".format(experiment), color="red")
-    click.echo(message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}".format(experiment,
-                                                                                                          dataset_size,
+    click.echo(message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}".format(dataset_size,
                                                                                                           batch_size,
                                                                                                           chunks),
                color="teal")
@@ -270,6 +276,9 @@ def cli(ctx: click.Context,
     elapsed_time = sum(elapsed_times) / n
     click.echo('%s | %.3f samples/sec, %.3f sec/epoch (average)'
                '' % (title, throughput, elapsed_time))
+    if save_file is not None:
+        with open(save_file, "a+") as fp:
+            fp.write("{},{},{},{}".format(experiment, dataset_size, batch_size, chunks))
 
 
 if __name__ == '__main__':
