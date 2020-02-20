@@ -174,7 +174,7 @@ def cli(ctx: click.Context,
         batch_size,
         chunks,
         save_file),
-               color="teal")
+        color="teal")
     hr()
 
     f: Experiment = EXPERIMENTS[experiment]
@@ -280,7 +280,8 @@ def cli(ctx: click.Context,
                '' % (title, throughput, elapsed_time))
     if save_file is not None:
         with open(save_file, "a+") as fp:
-            fp.write("{},{},{},{}\n".format(experiment, dataset_size, batch_size, chunks))
+            fp.write(
+                "{},{},{},{},{},{}\n".format(experiment, dataset_size, batch_size, chunks, throughput, elapsed_time))
 
 
 if __name__ == '__main__':
