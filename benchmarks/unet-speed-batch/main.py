@@ -127,6 +127,12 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     help='Chunks (default: 2)',
 )
 @click.option(
+    '--dataset_size', '-e',
+    type=int,
+    default=8,
+    help='Datasize (default: 10000)',
+)
+@click.option(
     '--skip-epochs', '-k',
     type=int,
     default=1,
@@ -143,6 +149,7 @@ def cli(ctx: click.Context,
         epochs: int,
         batch_size: int,
         chunks: int,
+        dataset_size: int,
         skip_epochs: int,
         devices: List[int],
         ) -> None:
@@ -170,8 +177,6 @@ def cli(ctx: click.Context,
     in_device = _devices[0]
     out_device = _devices[-1]
     torch.cuda.set_device(in_device)
-
-    dataset_size = 10000
 
     input = torch.rand(batch_size, 3, 192, 192, device=in_device)
     target = torch.ones(batch_size, 1, 192, 192, device=out_device)
