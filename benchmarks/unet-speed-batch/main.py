@@ -161,7 +161,12 @@ def cli(ctx: click.Context,
                             input_channels=3, output_channels=1)
 
     hr()
-    click.echo(message="Experiment: {}".format(experiment), color="\u001b[31m")
+    click.echo(message="Experiment: {}".format(experiment), color="red")
+    click.echo(message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}".format(experiment,
+                                                                                                          dataset_size,
+                                                                                                          batch_size,
+                                                                                                          chunks),
+               color="teal")
     hr()
 
     f: Experiment = EXPERIMENTS[experiment]
