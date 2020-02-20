@@ -169,9 +169,11 @@ def cli(ctx: click.Context,
 
     hr()
     click.echo(message="Experiment: {}".format(experiment), color="red")
-    click.echo(message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}".format(dataset_size,
-                                                                                                          batch_size,
-                                                                                                          chunks),
+    click.echo(message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}, Save File {}".format(
+        dataset_size,
+        batch_size,
+        chunks,
+        save_file),
                color="teal")
     hr()
 
@@ -278,7 +280,7 @@ def cli(ctx: click.Context,
                '' % (title, throughput, elapsed_time))
     if save_file is not None:
         with open(save_file, "a+") as fp:
-            fp.write("{},{},{},{}".format(experiment, dataset_size, batch_size, chunks))
+            fp.write("{},{},{},{}\n".format(experiment, dataset_size, batch_size, chunks))
 
 
 if __name__ == '__main__':
