@@ -21,16 +21,13 @@ Experiment = Callable[[nn.Module, List[int]], Stuffs]
 class Experiments:
 
     @staticmethod
-    def baseline(model: nn.Module, devices: List[int]) -> Stuffs:
-        batch_size = 40
+    def baseline(model: nn.Module, devices: List[int], batch_size: int) -> Stuffs:
         device = devices[0]
         model.to(device)
         return model, batch_size, [torch.device(device)]
 
     @staticmethod
-    def pipeline1(model: nn.Module, devices: List[int]) -> Stuffs:
-        batch_size = 80
-        chunks = 2
+    def pipeline1(model: nn.Module, devices: List[int], batch_size: int, chunks: int) -> Stuffs:
         balance = [241]
 
         model = cast(nn.Sequential, model)
@@ -38,9 +35,7 @@ class Experiments:
         return model, batch_size, list(model.devices)
 
     @staticmethod
-    def pipeline2(model: nn.Module, devices: List[int]) -> Stuffs:
-        batch_size = 512
-        chunks = 32
+    def pipeline2(model: nn.Module, devices: List[int], batch_size: int, chunks: int) -> Stuffs:
         balance = [104, 137]
 
         model = cast(nn.Sequential, model)
@@ -48,9 +43,7 @@ class Experiments:
         return model, batch_size, list(model.devices)
 
     @staticmethod
-    def pipeline4(model: nn.Module, devices: List[int]) -> Stuffs:
-        batch_size = 512
-        chunks = 16
+    def pipeline4(model: nn.Module, devices: List[int], batch_size: int, chunks: int) -> Stuffs:
         balance = [30, 66, 84, 61]
 
         model = cast(nn.Sequential, model)
@@ -58,9 +51,7 @@ class Experiments:
         return model, batch_size, list(model.devices)
 
     @staticmethod
-    def pipeline8(model: nn.Module, devices: List[int]) -> Stuffs:
-        batch_size = 640
-        chunks = 40
+    def pipeline8(model: nn.Module, devices: List[int], batch_size: int, chunks: int) -> Stuffs:
         balance = [16, 27, 31, 44, 22, 57, 27, 17]
 
         model = cast(nn.Sequential, model)
@@ -75,7 +66,6 @@ EXPERIMENTS: Dict[str, Experiment] = {
     'pipeline-4': Experiments.pipeline4,
     'pipeline-8': Experiments.pipeline8,
 }
-
 
 BASE_TIME: float = 0
 
@@ -125,6 +115,18 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     help='Number of epochs (default: 10)',
 )
 @click.option(
+    '--batch_size', '-e',
+    type=int,
+    default=10,
+    help='Batch Size (default: 10)',
+)
+@click.option(
+    '--chunks', '-e',
+    type=int,
+    default=10,
+    help='Chunks (default: 2)',
+)
+@click.option(
     '--skip-epochs', '-k',
     type=int,
     default=1,
@@ -149,6 +151,10 @@ def cli(ctx: click.Context,
     model: nn.Module = unet(depth=5, num_convs=5, base_channels=64,
                             input_channels=3, output_channels=1)
 
+    hr()
+    click.echo(message="Experiment: {}".format(experiment), color="\u001b[31m")
+    hr()
+
     f: Experiment = EXPERIMENTS[experiment]
     try:
         model, batch_size, _devices = f(model, devices)
@@ -167,7 +173,7 @@ def cli(ctx: click.Context,
 
     input = torch.rand(batch_size, 3, 192, 192, device=in_device)
     target = torch.ones(batch_size, 1, 192, 192, device=out_device)
-    data = [(input, target)] * (dataset_size//batch_size)
+    data = [(input, target)] * (dataset_size // batch_size)
 
     if dataset_size % batch_size != 0:
         last_input = input[:dataset_size % batch_size]
@@ -176,7 +182,7 @@ def cli(ctx: click.Context,
 
     # HEADER ======================================================================================
 
-    title = f'{experiment}, {skip_epochs+1}-{epochs} epochs'
+    title = f'{experiment}, {skip_epochs + 1}-{epochs} epochs'
     click.echo(title)
 
     if isinstance(model, GPipe):
@@ -214,10 +220,10 @@ def cli(ctx: click.Context,
             optimizer.zero_grad()
 
             # 00:01:02 | 1/20 epoch (42%) | 200.000 samples/sec (estimated)
-            percent = (i+1) / len(data) * 100
-            throughput = data_trained / (time.time()-tick)
+            percent = (i + 1) / len(data) * 100
+            throughput = data_trained / (time.time() - tick)
             log('%d/%d epoch (%d%%) | %.3f samples/sec (estimated)'
-                '' % (epoch+1, epochs, percent, throughput), clear=True, nl=False)
+                '' % (epoch + 1, epochs, percent, throughput), clear=True, nl=False)
 
         torch.cuda.synchronize(in_device)
         tock = time.time()
@@ -226,7 +232,7 @@ def cli(ctx: click.Context,
         elapsed_time = tock - tick
         throughput = data_trained / elapsed_time
         log('%d/%d epoch | %.3f samples/sec, %.3f sec/epoch'
-            '' % (epoch+1, epochs, throughput, elapsed_time), clear=True)
+            '' % (epoch + 1, epochs, throughput, elapsed_time), clear=True)
 
         return throughput, elapsed_time
 
