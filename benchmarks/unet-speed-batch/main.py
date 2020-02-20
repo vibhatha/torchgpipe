@@ -127,7 +127,7 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     help='Chunks (default: 2)',
 )
 @click.option(
-    '--saveFile', '-e',
+    '--save_file', '-e',
     type=str,
     default=None,
     help='Save File (default: None)',
