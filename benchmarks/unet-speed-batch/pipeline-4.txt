@@ -1,0 +1,16 @@
+pipeline-4, 2-10 epochs
+batch size: 512, chunks: 16, balance: [30, 66, 84, 61], checkpoint: except_last
+torchgpipe: 0.0.6, python: 3.6.8, torch: 1.4.0, cudnn: 7603, cuda: 10.1, gpu: Tesla K80
+--------------------------------------------------------------------------------
+                                                                                00:00:01 | 1/10 epoch (100%) | 6.057 samples/sec (estimated)                                                                                00:00:01 | 1/10 epoch | 4.556 samples/sec, 1.756 sec/epoch
+                                                                                00:00:02 | 2/10 epoch (100%) | 7.147 samples/sec (estimated)                                                                                00:00:03 | 2/10 epoch | 5.198 samples/sec, 1.539 sec/epoch
+                                                                                00:00:04 | 3/10 epoch (100%) | 7.214 samples/sec (estimated)                                                                                00:00:04 | 3/10 epoch | 5.258 samples/sec, 1.522 sec/epoch
+                                                                                00:00:06 | 4/10 epoch (100%) | 6.730 samples/sec (estimated)                                                                                00:00:06 | 4/10 epoch | 4.993 samples/sec, 1.602 sec/epoch
+                                                                                00:00:07 | 5/10 epoch (100%) | 7.236 samples/sec (estimated)                                                                                00:00:07 | 5/10 epoch | 5.280 samples/sec, 1.515 sec/epoch
+                                                                                00:00:09 | 6/10 epoch (100%) | 7.256 samples/sec (estimated)                                                                                00:00:09 | 6/10 epoch | 5.280 samples/sec, 1.515 sec/epoch
+                                                                                00:00:10 | 7/10 epoch (100%) | 7.173 samples/sec (estimated)                                                                                00:00:10 | 7/10 epoch | 5.258 samples/sec, 1.522 sec/epoch
+                                                                                00:00:12 | 8/10 epoch (100%) | 7.219 samples/sec (estimated)                                                                                00:00:12 | 8/10 epoch | 5.271 samples/sec, 1.518 sec/epoch
+                                                                                00:00:13 | 9/10 epoch (100%) | 7.233 samples/sec (estimated)                                                                                00:00:14 | 9/10 epoch | 5.284 samples/sec, 1.514 sec/epoch
+                                                                                00:00:15 | 10/10 epoch (100%) | 7.201 samples/sec (estimated)                                                                                00:00:15 | 10/10 epoch | 5.250 samples/sec, 1.524 sec/epoch
+--------------------------------------------------------------------------------
+pipeline-4, 2-10 epochs | 5.230 samples/sec, 1.530 sec/epoch (average)
