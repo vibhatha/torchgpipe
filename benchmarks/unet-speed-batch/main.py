@@ -21,7 +21,7 @@ Experiment = Callable[[nn.Module, List[int]], Stuffs]
 class Experiments:
 
     @staticmethod
-    def baseline(model: nn.Module, devices: List[int], batch_size: int) -> Stuffs:
+    def baseline(model: nn.Module, devices: List[int], batch_size: int, chunks: int) -> Stuffs:
         device = devices[0]
         model.to(device)
         return model, batch_size, [torch.device(device)]
@@ -141,6 +141,8 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
 def cli(ctx: click.Context,
         experiment: str,
         epochs: int,
+        batch_size: int,
+        chunks: int,
         skip_epochs: int,
         devices: List[int],
         ) -> None:
@@ -157,7 +159,7 @@ def cli(ctx: click.Context,
 
     f: Experiment = EXPERIMENTS[experiment]
     try:
-        model, batch_size, _devices = f(model, devices)
+        model, batch_size, _devices = f(model, devices, batch_size, chunks)
     except ValueError as exc:
         # Examples:
         #   ValueError: too few devices to hold given partitions (devices: 1, paritions: 2)
