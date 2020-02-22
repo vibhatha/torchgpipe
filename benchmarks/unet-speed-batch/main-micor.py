@@ -169,7 +169,7 @@ def cli(ctx: click.Context,
     """U-Net Speed Benchmark"""
     if skip_epochs >= epochs:
         ctx.fail('--skip-epochs=%d must be less than --epochs=%d' % (
-        skip_epochs, epochs))
+            skip_epochs, epochs))
 
     model: nn.Module = unet(depth=5, num_convs=5, base_channels=64,
                             input_channels=3, output_channels=1)
@@ -247,6 +247,7 @@ def cli(ctx: click.Context,
             output = model(input)
             forward_time.append(time.time() - t1)
             loss = F.binary_cross_entropy_with_logits(output, target)
+            torch.cuda.synchronize(in_device)
             t1 = time.time()
             loss.backward()
             backward_time.append(time.time() - t1)
@@ -270,8 +271,8 @@ def cli(ctx: click.Context,
         log('%d/%d epoch | %.3f samples/sec, %.3f sec/epoch'
             '' % (epoch + 1, epochs, throughput, elapsed_time), clear=True)
 
-        return throughput, elapsed_time, sum(forward_time)/len(forward_time),\
-               sum(backward_time)/len(backward_time)
+        return throughput, elapsed_time, sum(forward_time), \
+               sum(backward_time)
 
     throughputs = []
     elapsed_times = []
@@ -305,8 +306,8 @@ def cli(ctx: click.Context,
         with open(save_file, "a+") as fp:
             fp.write(
                 "{},{},{},{},{},{},{},{}\n".format(experiment, dataset_size,
-                                             batch_size, chunks, throughput,
-                                             elapsed_time, forward_avg_time,
+                                                   batch_size, chunks, throughput,
+                                                   elapsed_time, forward_avg_time,
                                                    backward_time))
 
 
