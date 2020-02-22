@@ -240,20 +240,35 @@ def cli(ctx: click.Context,
         data_trained = 0
         forward_time = []
         backward_time = []
+        loss_time = []
+        opt_time = []
         for i, (input, target) in enumerate(data):
             data_trained += input.size(0)
+
             torch.cuda.synchronize(in_device)
             t1 = time.time()
             output = model(input)
+            torch.cuda.synchronize(in_device)
             forward_time.append(time.time() - t1)
+
+            torch.cuda.synchronize(out_device)
+            t1 = time.time()
             loss = F.binary_cross_entropy_with_logits(output, target)
+            torch.cuda.synchronize(out_device)
+            loss_time.append(time.time() - t1)
+
             torch.cuda.synchronize(in_device)
             t1 = time.time()
             loss.backward()
+            torch.cuda.synchronize(in_device)
             backward_time.append(time.time() - t1)
 
+            torch.cuda.synchronize(in_device)
+            t1 = time.time()
             optimizer.step()
             optimizer.zero_grad()
+            torch.cuda.synchronize(in_device)
+            opt_time.append(time.time() - t1)
 
             # 00:01:02 | 1/20 epoch (42%) | 200.000 samples/sec (estimated)
             percent = (i + 1) / len(data) * 100
@@ -272,16 +287,18 @@ def cli(ctx: click.Context,
             '' % (epoch + 1, epochs, throughput, elapsed_time), clear=True)
 
         return throughput, elapsed_time, sum(forward_time), \
-               sum(backward_time)
+               sum(backward_time), sum(loss_time), sum(opt_time)
 
     throughputs = []
     elapsed_times = []
     forward_times = []
     backward_times = []
+    loss_times = []
+    opt_times = []
 
     hr()
     for epoch in range(epochs):
-        throughput, elapsed_time, forward_time, backward_time = run_epoch(epoch)
+        throughput, elapsed_time, forward_time, backward_time, loss_time, opt_time = run_epoch(epoch)
 
         if epoch < skip_epochs:
             continue
@@ -290,6 +307,8 @@ def cli(ctx: click.Context,
         elapsed_times.append(elapsed_time)
         forward_times.append(forward_time)
         backward_times.append(backward_time)
+        loss_times.append(loss_times)
+        opt_times.append(opt_time)
     hr()
 
     # RESULT ======================================================================================
@@ -300,15 +319,17 @@ def cli(ctx: click.Context,
     elapsed_time = sum(elapsed_times) / n
     forward_avg_time = sum(forward_times) / n
     backward_avg_time = sum(backward_times) / n
+    loss_avg_time = sum(loss_times) / n
+    opt_avg_time = sum(opt_times) / n
     click.echo('%s | %.3f samples/sec, %.3f sec/epoch (average)'
                '' % (title, throughput, elapsed_time))
     if save_file is not None:
         with open(save_file, "a+") as fp:
             fp.write(
-                "{},{},{},{},{},{},{},{}\n".format(experiment, dataset_size,
-                                                   batch_size, chunks, throughput,
-                                                   elapsed_time, forward_avg_time,
-                                                   backward_time))
+                "{},{},{},{},{},{},{},{},{},{}\n".format(experiment, dataset_size,
+                                                         batch_size, chunks, throughput,
+                                                         elapsed_time, forward_avg_time,
+                                                         backward_avg_time, loss_avg_time, opt_avg_time))
 
 
 if __name__ == '__main__':
