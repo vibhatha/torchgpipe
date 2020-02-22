@@ -307,7 +307,7 @@ def cli(ctx: click.Context,
         elapsed_times.append(elapsed_time)
         forward_times.append(forward_time)
         backward_times.append(backward_time)
-        loss_times.append(loss_times)
+        loss_times.append(loss_time)
         opt_times.append(opt_time)
     hr()
 
