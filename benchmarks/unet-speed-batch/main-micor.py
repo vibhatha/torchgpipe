@@ -323,6 +323,7 @@ def cli(ctx: click.Context,
     opt_avg_time = sum(opt_times) / n
     click.echo('%s | %.3f samples/sec, %.3f sec/epoch (average)'
                '' % (title, throughput, elapsed_time))
+
     if save_file is not None:
         with open(save_file, "a+") as fp:
             fp.write(
