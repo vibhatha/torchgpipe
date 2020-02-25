@@ -34,7 +34,7 @@ class Experiments:
         balance = [241]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
         return model, batch_size, list(model.devices)
 
     @staticmethod
@@ -43,7 +43,7 @@ class Experiments:
         balance = [104, 137]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
         return model, batch_size, list(model.devices)
 
     @staticmethod
@@ -52,7 +52,7 @@ class Experiments:
         balance = [30, 66, 84, 61]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
         return model, batch_size, list(model.devices)
 
     @staticmethod
@@ -61,7 +61,7 @@ class Experiments:
         balance = [16, 27, 31, 44, 22, 57, 27, 17]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
         return model, batch_size, list(model.devices)
 
 
