@@ -18,6 +18,7 @@ Stuffs = Tuple[
     nn.Module, int, List[torch.device]]  # (model, batch_size, devices)
 Experiment = Callable[[nn.Module, List[int]], Stuffs]
 
+run_type='always'
 
 class Experiments:
 
@@ -34,7 +35,7 @@ class Experiments:
         balance = [241]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
         return model, batch_size, list(model.devices)
 
     @staticmethod
@@ -43,7 +44,7 @@ class Experiments:
         balance = [104, 137]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
         return model, batch_size, list(model.devices)
 
     @staticmethod
@@ -52,7 +53,7 @@ class Experiments:
         balance = [30, 66, 84, 61]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
         return model, batch_size, list(model.devices)
 
     @staticmethod
@@ -61,7 +62,7 @@ class Experiments:
         balance = [16, 27, 31, 44, 22, 57, 27, 17]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint='never')
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
         return model, batch_size, list(model.devices)
 
 
