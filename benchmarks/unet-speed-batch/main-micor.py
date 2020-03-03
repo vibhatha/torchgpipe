@@ -18,6 +18,8 @@ Stuffs = Tuple[
     nn.Module, int, List[torch.device]]  # (model, batch_size, devices)
 Experiment = Callable[[nn.Module, List[int]], Stuffs]
 
+
+
 run_type='always'
 
 class Experiments:
@@ -140,6 +142,13 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     help='Save File (default: None)',
 )
 @click.option(
+    '--checkpointing', '-e',
+    type=str,
+    default='except_last',
+    help='checkpoint mode (default: except_last)',
+)
+
+@click.option(
     '--dataset_size', '-e',
     type=int,
     default=8,
@@ -165,7 +174,8 @@ def cli(ctx: click.Context,
         dataset_size: int,
         skip_epochs: int,
         devices: List[int],
-        save_file: str
+        save_file: str,
+        checkpointing: str
         ) -> None:
     """U-Net Speed Benchmark"""
     if skip_epochs >= epochs:
