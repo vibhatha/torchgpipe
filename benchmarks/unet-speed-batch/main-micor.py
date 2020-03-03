@@ -19,52 +19,49 @@ Stuffs = Tuple[
 Experiment = Callable[[nn.Module, List[int]], Stuffs]
 
 
-
-run_type='always'
-
 class Experiments:
 
     @staticmethod
     def baseline(model: nn.Module, devices: List[int], batch_size: int,
-                 chunks: int) -> Stuffs:
+                 chunks: int, checkpointing: str) -> Stuffs:
         device = devices[0]
         model.to(device)
         return model, batch_size, [torch.device(device)]
 
     @staticmethod
     def pipeline1(model: nn.Module, devices: List[int], batch_size: int,
-                  chunks: int) -> Stuffs:
+                  chunks: int, checkpointing: str) -> Stuffs:
         balance = [241]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=checkpointing)
         return model, batch_size, list(model.devices)
 
     @staticmethod
     def pipeline2(model: nn.Module, devices: List[int], batch_size: int,
-                  chunks: int) -> Stuffs:
+                  chunks: int, checkpointing: str) -> Stuffs:
         balance = [104, 137]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=checkpointing)
         return model, batch_size, list(model.devices)
 
     @staticmethod
     def pipeline4(model: nn.Module, devices: List[int], batch_size: int,
-                  chunks: int) -> Stuffs:
+                  chunks: int, checkpointing: str) -> Stuffs:
         balance = [30, 66, 84, 61]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=checkpointing)
         return model, batch_size, list(model.devices)
 
     @staticmethod
     def pipeline8(model: nn.Module, devices: List[int], batch_size: int,
-                  chunks: int) -> Stuffs:
+                  chunks: int, checkpointing: str) -> Stuffs:
         balance = [16, 27, 31, 44, 22, 57, 27, 17]
 
         model = cast(nn.Sequential, model)
-        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=run_type)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=checkpointing)
         return model, batch_size, list(model.devices)
 
 
@@ -147,7 +144,6 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     default='except_last',
     help='checkpoint mode (default: except_last)',
 )
-
 @click.option(
     '--dataset_size', '-e',
     type=int,
@@ -188,17 +184,18 @@ def cli(ctx: click.Context,
     hr()
     click.echo(message="Experiment: {}".format(experiment), color="red")
     click.echo(
-        message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}, Save File {}".format(
+        message="Configs: Dataset Size {}, Batch Size {}, Chunk Size (Micro-batch size) {}, Save File {} ,Checkpointing {}".format(
             dataset_size,
             batch_size,
             chunks,
-            save_file),
+            save_file,
+            checkpointing),
         color="teal")
     hr()
 
     f: Experiment = EXPERIMENTS[experiment]
     try:
-        model, batch_size, _devices = f(model, devices, batch_size, chunks)
+        model, batch_size, _devices = f(model, devices, batch_size, chunks, checkpointing)
     except ValueError as exc:
         # Examples:
         #   ValueError: too few devices to hold given partitions (devices: 1, paritions: 2)
