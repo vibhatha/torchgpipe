@@ -162,6 +162,8 @@ def parse_devices(ctx: Any, param: Any, value: Optional[str]) -> List[int]:
     callback=parse_devices,
     help='Device IDs to use (default: all CUDA devices)',
 )
+
+
 def cli(ctx: click.Context,
         experiment: str,
         epochs: int,
@@ -196,6 +198,7 @@ def cli(ctx: click.Context,
     f: Experiment = EXPERIMENTS[experiment]
     try:
         model, batch_size, _devices = f(model, devices, batch_size, chunks, checkpointing)
+
     except ValueError as exc:
         # Examples:
         #   ValueError: too few devices to hold given partitions (devices: 1, paritions: 2)
@@ -250,6 +253,7 @@ def cli(ctx: click.Context,
         backward_time = []
         loss_time = []
         opt_time = []
+
         for i, (input, target) in enumerate(data):
             data_trained += input.size(0)
 
@@ -259,10 +263,10 @@ def cli(ctx: click.Context,
             torch.cuda.synchronize(in_device)
             forward_time.append(time.time() - t1)
 
-            torch.cuda.synchronize(out_device)
+            torch.cuda.synchronize(in_device)
             t1 = time.time()
             loss = F.binary_cross_entropy_with_logits(output, target)
-            torch.cuda.synchronize(out_device)
+            torch.cuda.synchronize(in_device)
             loss_time.append(time.time() - t1)
 
             torch.cuda.synchronize(in_device)
@@ -285,6 +289,7 @@ def cli(ctx: click.Context,
                 '' % (epoch + 1, epochs, percent, throughput), clear=True,
                 nl=False)
 
+
         torch.cuda.synchronize(in_device)
         tock = time.time()
 
@@ -305,6 +310,7 @@ def cli(ctx: click.Context,
     opt_times = []
 
     hr()
+    t1 = time.time()
     for epoch in range(epochs):
         throughput, elapsed_time, forward_time, backward_time, loss_time, opt_time = run_epoch(epoch)
 
@@ -318,6 +324,7 @@ def cli(ctx: click.Context,
         loss_times.append(loss_time)
         opt_times.append(opt_time)
     hr()
+    t2 = time.time()
 
     # RESULT ======================================================================================
 
@@ -331,6 +338,7 @@ def cli(ctx: click.Context,
     opt_avg_time = sum(opt_times) / n
     click.echo('%s | %.3f samples/sec, %.3f sec/epoch (average)'
                '' % (title, throughput, elapsed_time))
+    click.echo('Average Time Per Epoch {}'.format((t2-t1)/epochs))
 
     if save_file is not None:
         with open(save_file, "a+") as fp:
