@@ -64,6 +64,14 @@ class Experiments:
         model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=checkpointing)
         return model, batch_size, list(model.devices)
 
+    @staticmethod
+    def dataparallel(model: nn.Module, devices: List[int], batch_size: int,
+                  chunks: int, checkpointing: str) -> Stuffs:
+        balance = [16, 27, 31, 44, 22, 57, 27, 17]
+
+        model = cast(nn.Sequential, model)
+        model = GPipe(model, balance, devices=devices, chunks=chunks, checkpoint=checkpointing)
+        return model, batch_size, list(model.devices)
 
 EXPERIMENTS: Dict[str, Experiment] = {
     'baseline': Experiments.baseline,
@@ -245,7 +253,8 @@ def cli(ctx: click.Context,
     BASE_TIME = time.time()
 
     def run_epoch(epoch: int) -> Tuple[float, float]:
-        torch.cuda.synchronize(in_device)
+        for dv in _devices:
+            torch.cuda.synchronize(dv)
         tick = time.time()
 
         data_trained = 0
@@ -257,29 +266,37 @@ def cli(ctx: click.Context,
         for i, (input, target) in enumerate(data):
             data_trained += input.size(0)
 
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             t1 = time.time()
             output = model(input)
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             forward_time.append(time.time() - t1)
 
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             t1 = time.time()
             loss = F.binary_cross_entropy_with_logits(output, target)
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             loss_time.append(time.time() - t1)
 
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             t1 = time.time()
             loss.backward()
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             backward_time.append(time.time() - t1)
 
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             t1 = time.time()
             optimizer.step()
             optimizer.zero_grad()
-            torch.cuda.synchronize(in_device)
+            for dv in _devices:
+                torch.cuda.synchronize(dv)
             opt_time.append(time.time() - t1)
 
             # 00:01:02 | 1/20 epoch (42%) | 200.000 samples/sec (estimated)
@@ -289,8 +306,8 @@ def cli(ctx: click.Context,
                 '' % (epoch + 1, epochs, percent, throughput), clear=True,
                 nl=False)
 
-
-        torch.cuda.synchronize(in_device)
+        for dv in _devices:
+            torch.cuda.synchronize(dv)
         tock = time.time()
 
         # 00:02:03 | 1/20 epoch | 200.000 samples/sec, 123.456 sec/epoch
